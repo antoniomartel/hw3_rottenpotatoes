@@ -27,9 +27,29 @@ Scenario: restrict to movies with 'PG' or 'R' ratings
   # enter step to "submit" the search form on the homepage
   # enter step(s) to ensure that PG and R movies are visible
   # enter step(s) to ensure that other movies are not visible
+  Given I check the following ratings: PG, R
+  And I uncheck the following ratings: G, PG-13, NC-17
+  When I press "ratings_submit"
+  Then the following ratings should be checked: PG, R
+  And the following ratings should be unchecked: G, PG-13, NC-17
+  
 
 Scenario: no ratings selected
-  # see assignment
+  Given I uncheck the following ratings: PG, R, G, PG-13, NC-17
+  When I press "ratings_submit"
+  Then I should see none of the movies
 
 Scenario: all ratings selected
-  # see assignment
+  Given I check the following ratings: PG, R, G, PG-13, NC-17
+  When I press "ratings_submit"
+  Then I should see all of the movies
+
+Scenario: filter movies by checking ratings
+  When I check the following ratings: G
+  And I press "ratings_submit"
+  Then the following ratings should be checked: G
+
+Scenario: filter movies by unchecking ratings
+  Given I uncheck the following ratings: PG, G, R
+  And I press "ratings_submit"
+  Then the following ratings should be unchecked: PG, G, R

@@ -19,6 +19,10 @@ module NavigationHelpers
       '/movies'
     when /^the Create New Movie page$/i
       '/movies/new'
+    when /^Movie Title$/i
+      '/movies?' + URI.parse(current_url).query
+    when /^Refresh Filter$/i
+      '/movies?' + URI.parse(current_url).query
 
     # Add more mappings here.
     # Here is an example that pulls values out of the Regexp:
@@ -38,27 +42,6 @@ module NavigationHelpers
     end
   end
 
-  def click_link(link)
-    case link
-
-    when /^Add new movie$/i
-      visit 'movies/new'
-
-    # Add more mappings here.
-    # Here is an example that pulls values out of the Regexp:
-    #
-    #   when /^(.*)'s profile page$/i
-    #     user_profile_path(User.find_by_login($1))
-
-    else
-      begin
-       visit '/'
-      rescue NoMethodError, ArgumentError
-        raise "Can't find page at \"#{link}\".\n" +
-          "Now, go and add a mapping in #{__FILE__}"
-      end
-    end
-  end
 end
 
 World(NavigationHelpers)
