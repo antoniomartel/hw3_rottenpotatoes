@@ -11,6 +11,14 @@ Given /the following movies exist/ do |movies_table|
   end
 end
 
+Given /all ratings selected/i do
+  Movie.all_ratings.each do |rating|
+    check("ratings_" + rating)
+  end
+
+  visit('/movies?ratings%5BG%5D=1&ratings%5BNC-17%5D=1&ratings%5BPG%5D=1&ratings%5BPG-13%5D=1&ratings%5BR%5D=1')
+end
+
 # Make sure that one string (regexp) occurs before or after another one
 #   on the same page
 
@@ -28,18 +36,17 @@ Then /I should see "(.*)" before "(.*)"/ do |e1, e2|
   end
   
   assert(bool, " -- Error sorting --")
-
-  # flunk "Unimplemented"
 end
 
 # Make it easier to express checking or unchecking several boxes at once
 #  "When I uncheck the following ratings: PG, G, R"
 #  "When I check the following ratings: G"
 
-Given /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
+When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   # HINT: use String#split to split up the rating_list, then
   #   iterate over the ratings and reuse the "When I check..." or
   #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
+
   if uncheck == 'un'
     rating_list.split(%r{,\s*}).each do |rating|
       steps %{When I uncheck "ratings_#{rating}"}
@@ -51,30 +58,49 @@ Given /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   end
 end
 
-Then /the following ratings should be (un)?checked: (.*)/ do |uncheck, rating_list|
-  if uncheck == 'un'
-    bool = true
-    rating_list.split(%r{,\s*}).each do |rating|
-      if page.find("#ratings_" + rating).checked?.to_s() == "checked"
-	bool = false; 
-      end 
-    end
-  else
-    bool = true
-    rating_list.split(%r{,\s*}).each do |rating|
-      if page.find("#ratings_" + rating).checked?.to_s() != "checked"
-        bool = false; 
-      end 
+Then /the following ratings should be checked: (.*)/ do |rating_list|
+  bool = true
+
+  rating_list.split(%r{,\s*}).each do |rating|
+    if page.find_by_id("ratings_" + rating).checked?.to_s() != "checked"
+      bool = false;
+    end 
+  end
+
+  assert bool.should == true
+end
+
+Then /the following ratings should be unchecked: (.*)/ do |rating_list|
+  bool = true
+  
+  rating_list.split(%r{,\s*}).each do |rating|
+    if page.find_by_id("ratings_" + rating).checked?.to_s() == "checked"
+      bool = false; 
     end
   end
 
-  assert(bool, " -- Error sorting --")
+  assert bool.should == true
+end
+
+Then /I should see rating "([^"]*)"$/ do |rating|
+  bool = false
+
+  Movie.find_by_rating(rating).nil
+end   
+
+Then /it should (not )?exists "([^"]*)"$/ do |exists, text|
+  if exists.nil?
+    assert Movie.find_by_title(text).nil? == false
+  else
+    assert Movie.find_by_title(text).nil? == true
+  end
 end
 
 Then /I should see (all|none) of the movies/i do |count|
   if count = 'all' 
-    assert Movie.count.should == 10
+    #assert Movie.count.should == 10
+    page.all('table#movies tr').count.should == 11
   else
-    assert Movie.count.should == 0
+    page.all('table#movies tr').count.should == 0
   end
 end

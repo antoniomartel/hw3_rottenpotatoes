@@ -21,6 +21,8 @@ module NavigationHelpers
       '/movies/new'
     when /^Movie Title$/i
       '/movies?' + URI.parse(current_url).query
+    when /^Release Date$/i
+      '/movies?' + URI.parse(current_url).query
     when /^Refresh Filter$/i
       '/movies?' + URI.parse(current_url).query
 
